@@ -5,7 +5,7 @@ Vector is sorted!
 ## Banchmarking Parallel...
 Parallel took 2784562 microseconds
 Vector is sorted!
-Acceleration: 3.47685
+### Acceleration: 3.47685
 
 # Run \#2
 ## Banchmarking Sequental...
@@ -14,7 +14,7 @@ Vector is sorted!
 ## Banchmarking Parallel...
 Parallel took 2822380 microseconds
 Vector is sorted!
-Acceleration: 3.39223
+### Acceleration: 3.39223
 
 # Run \#3
 ## Banchmarking Sequental...
@@ -23,7 +23,7 @@ Vector is sorted!
 ## Banchmarking Parallel...
 Parallel took 2972814 microseconds
 Vector is sorted!
-Acceleration: 3.24293
+### Acceleration: 3.24293
 
 # Run #4
 ## Banchmarking Sequental...
@@ -32,7 +32,7 @@ Vector is sorted!
 ## Banchmarking Parallel...
 Parallel took 2939439 microseconds
 Vector is sorted!
-Acceleration: 3.26647
+### Acceleration: 3.26647
 
 # Run #5
 ## Banchmarking Sequental...
@@ -41,10 +41,10 @@ Vector is sorted!
 ## Banchmarking Parallel...
 Parallel took 2936408 microseconds
 Vector is sorted!
-Acceleration: 3.27538
+### Acceleration: 3.27538
 
 
-| seq (mcsec) | par(mcsec)| accelerate 
+| seq (mcsec) | par(mcsec)| accelerate |
 | ------- | ------- | --------|
 | 9681514 | 2784562 | 3.47685 |
 | 9574154 | 2822380 | 3.39223 |
