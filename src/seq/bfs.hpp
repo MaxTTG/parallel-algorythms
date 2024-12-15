@@ -5,9 +5,7 @@
 
 namespace seq {
 
-namespace {
 static const int64_t NOT_VISITED = -1;
-}  // namespace
 
 std::vector<int64_t> bfs(int64_t start, std::vector<std::vector<int64_t>> const& edges) {
     std::vector<int64_t> dist(edges.size(), NOT_VISITED);

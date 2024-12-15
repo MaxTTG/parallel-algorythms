@@ -201,9 +201,55 @@ int bfsMain() {
     return 0;
 }
 
+void tests() {
+    // Тест 1: Один узел
+    {
+        std::vector<std::vector<int64_t>> edges = {{}};
+        assert(vectorsEquals(seq::bfs(0, edges), std::vector<int64_t>{0}));
+        assert(vectorsEquals(par::bfs(0, edges), std::vector<int64_t>{0}));
+    }
+
+    // Тест 2: Два узла с ребром
+    {
+        std::vector<std::vector<int64_t>> edges = {{1}, {}};
+        assert(vectorsEquals(seq::bfs(0, edges), std::vector<int64_t>{0, 1}));
+        assert(vectorsEquals(par::bfs(0, edges), std::vector<int64_t>{0, 1}));
+    }
+
+    // Тест 3: Несвязный граф
+    {
+        std::vector<std::vector<int64_t>> edges = {{}, {}};
+        assert(vectorsEquals(seq::bfs(0, edges), std::vector<int64_t>{0, seq::NOT_VISITED}));
+        assert(vectorsEquals(par::bfs(0, edges), std::vector<int64_t>{0, par::NOT_VISITED}));
+    }
+
+    // Тест 4: Кольцевой граф
+    {
+        std::vector<std::vector<int64_t>> edges = {{1}, {2}, {0}};
+        assert(vectorsEquals(seq::bfs(0, edges), std::vector<int64_t>{0, 1, 2}));
+        assert(vectorsEquals(par::bfs(0, edges), std::vector<int64_t>{0, 1, 2}));
+    }
+
+    // Тест 5: Случайный граф
+    {
+        std::vector<std::vector<int64_t>> edges = {
+            {1, 2},  // 0 -> 1, 0 -> 2
+            {3},     // 1 -> 3
+            {3},     // 2 -> 3
+            {}       // 3
+        };
+
+        assert(vectorsEquals(seq::bfs(0, edges), std::vector<int64_t>{0, 1, 1, 2}));
+        assert(vectorsEquals(par::bfs(0, edges), std::vector<int64_t>{0, 1, 1, 2}));
+    }
+
+    std::cout << "All tests passed!" << std::endl;
+}
+
 }  // namespace task2
 
 int main() {
     // return task1::qsortMain();
+    task2::tests();
     return task2::bfsMain();
 }
