@@ -170,7 +170,7 @@ int bfsMain() {
         std::cout << std::endl << "Run #" << i + 1 << std::endl;
         auto [seqTime, seqRes] = benchmark("seq::BFS", seq::bfs, 0, cube);
         auto [parTime, parRes] = benchmark("par::BFS", par::bfs, 0, cube);
-        vectorsEquals(seqRes, parRes);
+        assert(vectorsEquals(seqRes, parRes));
         runs.push_back({seqTime, parTime});
     }
 
