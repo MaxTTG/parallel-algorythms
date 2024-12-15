@@ -1,13 +1,6 @@
 /**
  * @file main.cpp
  * @author m-tarazanov@list.ru
- * @brief Нужно реализовать quicksort.
-            От Вас требуется написать последовательную
-            версию алгоритма (seq) и параллельную версию (par).
-            Взять случайный массив из 10^8 элементов и отсортировать.
-            (Усреднить по 5 запускам) Сравнить время работы par на
-            4 процессах и seq на одном процессе - у Вас должно быть раза в 3 быстрее.
-            Также нужно сопроводить тестами на корректность работы алгоритма.
  * @version 0.1
  */
 
@@ -18,16 +11,42 @@
 #include <vector>
 
 #include "src/gen.hpp"
+#include "src/par/bfs.hpp"
 #include "src/par/qsort.hpp"
+#include "src/seq/bfs.hpp"
 #include "src/seq/qsort.hpp"
 
-#define VECSIZE 100000000
+#define VECSIZE 100
 #define RUNNUMS 5
+#define CUBE_EDGE 500
 
 enum SEQ_OR_PAR {
     SEQ,
     PAR,
 };
+
+template <typename Func, typename... Args>
+auto benchmark(const std::string& label, Func func, Args&&... args) {
+    std::cout << "Benchmarking " << label << "..." << std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
+    if constexpr (std::is_void_v<std::invoke_result_t<Func, Args...>>) {
+        func(std::forward<Args>(args)...);
+        auto end      = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+        std::cout << label << " took " << duration << " microseconds" << std::endl;
+        return duration;
+    } else {
+        auto result   = func(std::forward<Args>(args)...);
+        auto end      = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+        std::cout << label << " took " << duration << " microseconds" << std::endl;
+        return std::make_pair(duration, result);
+    }
+}
+
+namespace task1 {
 
 void printVec(const std::vector<int>& vec) {
     for (auto&& i : vec) {
@@ -50,20 +69,6 @@ bool isSorted(const std::vector<int>& vec) {
     std::cout << "Vector is sorted!" << std::endl;
 
     return true;
-}
-
-template <typename Func, typename... Args>
-size_t benchmark(const std::string& label, Func func, Args&&... args) {
-    std::cout << "Banchmarking " << label << "..." << std::endl;
-
-    auto start = std::chrono::high_resolution_clock::now();
-    func(std::forward<Args>(args)...);
-    auto end = std::chrono::high_resolution_clock::now();
-
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
-    std::cout << label << " took " << duration << " microseconds" << std::endl;
-    return duration;
 }
 
 template <typename T>
@@ -96,11 +101,11 @@ auto run() {
     return std::make_pair(seqTime, parTime);
 }
 
-int main() {
+int qsortMain() {
     std::vector<std::pair<size_t, size_t>> runs;
     for (int i = 0; i < RUNNUMS; ++i) {
         std::cout << std::endl << "Run #" << i + 1 << std::endl;
-        runs.push_back(run());
+        runs.emplace_back(run());
     }
 
     // clang-format off
@@ -128,4 +133,77 @@ int main() {
     std::cout << "Average accelerate: " << (double)avgSeq / avgPar << std::endl;
 
     return 0;
+}
+
+}  // namespace task1
+
+namespace task2 {
+
+template <typename T>
+bool vectorsEquals(const std::vector<T>& vec1, const std::vector<T>& vec2) {
+    assert(vec1.size() == vec2.size());
+    for (size_t i = 0; i < vec1.size(); ++i) {
+        if (vec1[i] != vec2[i]) {
+            std::cout << "Векторы не равны: vec1[" << i << "] = " << vec1[i] << "; vec2[" << i << "] = " << vec2[i]
+                      << std::endl;
+            return false;
+        }
+    }
+
+    std::cout << "Векторы равны!" << std::endl;
+    return true;
+}
+
+int bfsMain() {
+#ifdef PREFIX_SCAN_SPLIT
+    std::cout << "PREFIX_SCAN_SPLIT" << std::endl;
+#endif
+
+#ifdef LOCAL_FRONTIERS
+    std::cout << "LOCAL_FRONTIERS" << std::endl;
+#endif
+
+    const auto cube = gen::generateCube({CUBE_EDGE, CUBE_EDGE, CUBE_EDGE});
+
+    std::vector<std::pair<size_t, size_t>> runs;
+    for (int i = 0; i < RUNNUMS; ++i) {
+        std::cout << std::endl << "Run #" << i + 1 << std::endl;
+        auto [seqTime, seqRes] = benchmark("seq::BFS", seq::bfs, 0, cube);
+        auto [parTime, parRes] = benchmark("par::BFS", par::bfs, 0, cube);
+        vectorsEquals(seqRes, parRes);
+        runs.push_back({seqTime, parTime});
+    }
+
+    // clang-format off
+    std::cout << std::endl
+              << "=====================================" << std::endl
+              << "seq (mcsec) | par(mcsec)| accelerate " << std::endl
+              << "=====================================" << std::endl;
+    // clang-format on
+
+    size_t avgSeq = 0;
+    size_t avgPar = 0;
+
+    for (int i = 0; i < RUNNUMS; ++i) {
+        avgSeq += runs[i].first;
+        avgPar += runs[i].second;
+        std::cout << '\t' << runs[i].first << "\t|\t" << runs[i].second << "\t|\t"
+                  << (double)runs[i].first / runs[i].second << std::endl;
+    }
+
+    avgSeq /= RUNNUMS;
+    avgPar /= RUNNUMS;
+    std::cout << "=====================================" << std::endl;
+    std::cout << "Average seq result: " << avgSeq << std::endl;
+    std::cout << "Average par result: " << avgPar << std::endl;
+    std::cout << "Average accelerate: " << (double)avgSeq / avgPar << std::endl;
+
+    return 0;
+}
+
+}  // namespace task2
+
+int main() {
+    // return task1::qsortMain();
+    return task2::bfsMain();
 }
